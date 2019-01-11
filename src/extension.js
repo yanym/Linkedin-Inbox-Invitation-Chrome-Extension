@@ -54,7 +54,7 @@ function performRequest(token) {
 
 function processResponse(json) {
   const { elements, metadata, paging } = json;
-  // console.log(elements);
+  console.log(elements);
   // console.log(metadata);
   // console.log(paging);
   const unreadCount = metadata.unreadCount;
@@ -65,8 +65,9 @@ function processResponse(json) {
   const messages = [];
 
   for (let element of elements) {
-    var { miniProfile: participant_profile } = element.participants[0][MEMBER_KEY];
-      
+    const { miniProfile: participant_profile } = element.participants[0][MEMBER_KEY];
+    const { read: isRead } = element;
+    // console.log(isRead);
     for (let event of element.events) {
         const { subject = '', body } = event.eventContent[MESSAGE_KEY];
         const { miniProfile: profile } = event.from[MEMBER_KEY];
@@ -109,7 +110,8 @@ function processResponse(json) {
             toWho: `${participant_profile.firstName} ${participant_profile.lastName}`,
             subject,
             body: text,
-            subtype
+            subtype,
+            isRead
           });
         } else {
           if (
@@ -136,7 +138,8 @@ function processResponse(json) {
               toWho: `${participant_profile.firstName} ${participant_profile.lastName}`,
               subject,
               body: body.substr(0, MESSAGE_LENGTH_LIMIT_CHARS) + '......',
-              subtype
+              subtype,
+              isRead
             });
           } else {
             messages.push({
@@ -145,7 +148,8 @@ function processResponse(json) {
               toWho: `${participant_profile.firstName} ${participant_profile.lastName}`,
               subject,
               body: body.substr(0, MESSAGE_LENGTH_LIMIT_CHARS),
-              subtype
+              subtype,
+              isRead
             });
           }
         }
@@ -178,36 +182,68 @@ function createMessageRows(messages, totalMessages) {
   var controlColor = 0;
   for (let message of messages) {
     const messageRow = document.createElement('tr');
-    if (controlColor % 2 == 0) {
-    messageRow.innerHTML = `
-        <td style="background: rgb(194,233,254,0.1)">
+    if (message.isRead === false) {
+      messageRow.innerHTML = `
+        <td style="background: rgb(255, 0, 0, 0.1)">
           <img src="${message.pictureUrl}" width="55">
         </td>
-        <td style="background: rgb(194,233,254,0.1); text-align: center">
-          <b>${message.name}</b><br />
+        <td style="background: rgb(255, 0, 0, 0.1); text-align: center">
+          <b>${message.name}</b>
+          <br />
           ${message.subject}
         </td>
-        <td style="background: rgb(194,233,254,0.1); text-align: center;">
+        <td style="background: rgb(255, 0, 0, 0.1); text-align: center;">
           ${message.toWho}
         </td>
-        <td style="background: rgb(194,233,254,0.1); text-align: justify">${message.body}</td>
-        <td style="background: rgb(194,233,254,0.1); text-align: center">${message.subtype}</td>
-    `;
+        <td style="background: rgb(255, 0, 0, 0.1); text-align: justify">
+          ${message.body}
+        </td>
+        <td style="background: rgb(255, 0, 0, 0.1); text-align: center">
+          ${message.subtype}
+        </td>
+      `;
+    } else { 
+      if (controlColor % 2 == 0) {
+        messageRow.innerHTML = `
+          <td style="background: rgb(194, 233, 254, 0.1)">
+            <img src="${message.pictureUrl}" width="55">
+          </td>
+          <td style="background: rgb(194,233,254,0.1); text-align: center">
+            <b>${message.name}</b>
+            <br />
+            ${message.subject}
+          </td>
+          <td style="background: rgb(194, 233, 254, 0.1); text-align: center;">
+            ${message.toWho}
+          </td>
+          <td style="background: rgb(194, 233, 254, 0.1); text-align: justify">
+            ${message.body}
+          </td>
+          <td style="background: rgb(194, 233, 254, 0.1); text-align: center">
+            ${message.subtype}
+          </td>
+        `;
     } else {
       messageRow.innerHTML = `
-      <td style="background: rgb(212,255,204,0.1)">
-        <img src="${message.pictureUrl}" width="55">
-      </td>
-      <td style="background: rgb(212,255,204,0.1); text-align: center">
-        <b>${message.name}</b><br />
-        ${message.subject}
-      </td>
-      <td style="background: rgb(212,255,204,0.1); text-align: center">
-        ${message.toWho}
-      </td>
-      <td style="background: rgb(212,255,204,0.1); text-align: justify">${message.body}</td>
-      <td style="background: rgb(212,255,204,0.1); text-align: center">${message.subtype}</td>
-    `;
+        <td style="background: rgb(212, 255, 204, 0.1)">
+          <img src="${message.pictureUrl}" width="55">
+        </td>
+        <td style="background: rgb(212, 255, 204, 0.1); text-align: center">
+          <b>${message.name}</b>
+          <br />
+          ${message.subject}
+        </td>
+        <td style="background: rgb(212, 255, 204, 0.1); text-align: center">
+          ${message.toWho}
+        </td>
+        <td style="background: rgb(212, 255, 204, 0.1); text-align: justify">
+          ${message.body}
+        </td>
+        <td style="background: rgb(212, 255, 204, 0.1); text-align: center">
+          ${message.subtype}
+        </td>
+      `;
+    }
     }
     document.getElementById('messages').appendChild(messageRow);
     controlColor++;
