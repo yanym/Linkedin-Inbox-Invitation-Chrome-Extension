@@ -6,18 +6,19 @@ body {
 
 table {
   font-size: 12px;
-  border-collapse: initial;
+  /* border-collapse: initial; */
 }
 
 .table td {
   padding: 0;
   vertical-align: middle;
+  border-top: 2px solid #e9ecef;
   /* width: 10x !important; */
 }
 
 .table thead th {
   padding: 0.1em;
-  background-color: #b4ffc0;
+  background-color: rgb(212,255,204,0.39);
 }
 
 .stats {
@@ -30,4 +31,8 @@ table {
 .btn, .btn-info {
   color: #fff !important;
   cursor: pointer;
+}
+
+.table td.justift {
+
 }

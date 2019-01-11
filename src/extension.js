@@ -70,13 +70,24 @@ function processResponse(json) {
     for (let event of element.events) {
         const { subject = '', body } = event.eventContent[MESSAGE_KEY];
         const { miniProfile: profile } = event.from[MEMBER_KEY];
-        const { subtype } = event;
-        // console.log(subtype);
+        const { subtype: _subtype } = event;
+        var subtype;
+        if (_subtype === "INVITATION_ACCEPT") {
+          subtype = "AC_Invitation"
+        }
+        if (_subtype === "INMAIL_REPLY") {
+          subtype = "Imail_Reply"
+        }
+        if (_subtype === "MEMBER_TO_MEMBER") {
+          subtype = "M2M"
+        }
+        if (_subtype === "INMAIL") {
+          subtype = "Inmail"
+        }
         let pictureUrl = DEFAULT_PICTURE_URL;
 
-        if (subtype === "INVITATION_ACCEPT") {
+        if (subtype === "AC_Invitation") {
           const { text } = event.eventContent[MESSAGE_KEY].attributedBody;
-          // console.log(text);
           if (
             profile.picture &&
             profile.picture[PICTURE_KEY] &&
@@ -114,7 +125,6 @@ function processResponse(json) {
           }
           
           if (participant_profile.firstName === profile.firstName && participant_profile.lastName === profile.lastName) {
-            // console.log(participant_profile.firstName + "|" + profile.firstName);
             participant_profile.firstName = "Me";
             participant_profile.lastName = "";
           }
@@ -158,32 +168,49 @@ function createMessageRows(messages, totalMessages) {
   // Header
   document.getElementById('header').innerHTML = `
     <tr>
-      <th scope="col">Img</th>
-      <th scope="col">Subject</th>
-      <th scope="col">To</th>
+      <th scope="col" style="text-align: center">Profile</th>
+      <th scope="col" style="text-align: center">Subject</th>
+      <th scope="col" style="text-align: center">To</th>
       <th scope="col">Content</th>
-      <th scope="col">Type</th>
+      <th scope="col" style="text-align: center">Type</th>
     </tr>
   `;
-
+  var controlColor = 0;
   for (let message of messages) {
     const messageRow = document.createElement('tr');
+    if (controlColor % 2 == 0) {
     messageRow.innerHTML = `
-      <td>
-        <img src="${message.pictureUrl}" width="66">
+        <td style="background: rgb(194,233,254,0.1)">
+          <img src="${message.pictureUrl}" width="55">
+        </td>
+        <td style="background: rgb(194,233,254,0.1); text-align: center">
+          <b>${message.name}</b><br />
+          ${message.subject}
+        </td>
+        <td style="background: rgb(194,233,254,0.1); text-align: center;">
+          ${message.toWho}
+        </td>
+        <td style="background: rgb(194,233,254,0.1); text-align: justify">${message.body}</td>
+        <td style="background: rgb(194,233,254,0.1); text-align: center">${message.subtype}</td>
+    `;
+    } else {
+      messageRow.innerHTML = `
+      <td style="background: rgb(212,255,204,0.1)">
+        <img src="${message.pictureUrl}" width="55">
       </td>
-      <td>
+      <td style="background: rgb(212,255,204,0.1); text-align: center">
         <b>${message.name}</b><br />
         ${message.subject}
       </td>
-      <td>
+      <td style="background: rgb(212,255,204,0.1); text-align: center">
         ${message.toWho}
       </td>
-      <td>${message.body}</td>
-      <td>${message.subtype}</td>
+      <td style="background: rgb(212,255,204,0.1); text-align: justify">${message.body}</td>
+      <td style="background: rgb(212,255,204,0.1); text-align: center">${message.subtype}</td>
     `;
-
+    }
     document.getElementById('messages').appendChild(messageRow);
+    controlColor++;
   }
 
   // footer
