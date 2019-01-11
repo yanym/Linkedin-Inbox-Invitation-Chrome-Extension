@@ -1,0 +1,32 @@
+body {
+  padding-top: 5px;
+  width: 666px;
+  font-family: sans-serif;
+}
+
+table {
+  font-size: 14px;
+  border-collapse: initial;
+}
+
+.table td {
+  padding: 0;
+  vertical-align: middle;
+}
+
+.table thead th {
+  padding: 0.1em;
+  background-color: #b4ffc0;
+}
+
+.stats {
+  text-align: center;
+  padding-bottom: 10px;
+}
+
+/* Bootstrap overrides */
+
+.btn, .btn-info {
+  color: #fff !important;
+  cursor: pointer;
+}

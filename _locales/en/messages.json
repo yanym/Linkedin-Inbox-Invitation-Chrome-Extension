@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "LinkedIn Messages and Invitation",
+    "description": "Shou you messages and new invitation."
+  },
+  "appDesc": {
+    "message": "LinkedIn extension that shows recent messages and other message relevant data.",
+    "description":"LinkedIn extension that shows recent messages and other message relevant data."
+  }
+}
