@@ -14,7 +14,7 @@ You can see following infomation about your messages:
    4. Inmail_Reply  
 
 # Demo
-![](https://github.com/yanym/Linkedin-Inbox-Invitation-Chrome-Extension/_locales/en/Demo1.jpg)  
+![](https://github.com/yanym/Linkedin-Inbox-Invitation-Chrome-Extension/tree/master/_locales/enDemo1.jpg)  
 
-![footer](https://github.com/yanym/Linkedin-Inbox-Invitation-Chrome-Extension/_locales/en/footer.jpg)  
+![footer](https://github.com/yanym/Linkedin-Inbox-Invitation-Chrome-Extension/tree/master/_locales/enfooter.jpg)  
 
