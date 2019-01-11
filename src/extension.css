@@ -1,17 +1,18 @@
 body {
   padding-top: 5px;
-  width: 666px;
+  width: 800px;
   font-family: sans-serif;
 }
 
 table {
-  font-size: 14px;
+  font-size: 12px;
   border-collapse: initial;
 }
 
 .table td {
   padding: 0;
   vertical-align: middle;
+  /* width: 10x !important; */
 }
 
 .table thead th {

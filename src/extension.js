@@ -54,56 +54,91 @@ function performRequest(token) {
 
 function processResponse(json) {
   const { elements, metadata, paging } = json;
-  console.log(elements);
-  console.log(metadata);
-  console.log(paging);
+  // console.log(elements);
+  // console.log(metadata);
+  // console.log(paging);
   const unreadCount = metadata.unreadCount;
   const totalMessages = paging.total;
-
+  // console.log(unreadCount);
   createBadges(unreadCount);
 
   const messages = [];
 
   for (let element of elements) {
+    var { miniProfile: participant_profile } = element.participants[0][MEMBER_KEY];
+      
     for (let event of element.events) {
-      // if (
-      //   event.subtype === eventSubTypes.INMAIL ||
-      //   event.subtype === eventSubTypes.INMAIL_REPLY ||
-      //   event.subtype === eventSubTypes.MEMBER_TO_MEMBER
-      // ) {
-        // const { subject = 'No subject', body } = event.eventContent[MESSAGE_KEY];
         const { subject = '', body } = event.eventContent[MESSAGE_KEY];
         const { miniProfile: profile } = event.from[MEMBER_KEY];
-
+        const { subtype } = event;
+        // console.log(subtype);
         let pictureUrl = DEFAULT_PICTURE_URL;
 
-        if (
-          profile.picture &&
-          profile.picture[PICTURE_KEY] &&
-          profile.picture[PICTURE_KEY].artifacts &&
-          profile.picture[PICTURE_KEY].rootUrl &&
-          profile.picture[PICTURE_KEY].artifacts[0]
-        ) {
-          const pictureUrlBase = profile.picture[PICTURE_KEY].rootUrl;
-          const picturePath = profile.picture[PICTURE_KEY].artifacts[0].fileIdentifyingUrlPathSegment;
-          pictureUrl = pictureUrlBase + picturePath;
-        }
-        if (body.length > MESSAGE_LENGTH_LIMIT_CHARS) {
+        if (subtype === "INVITATION_ACCEPT") {
+          const { text } = event.eventContent[MESSAGE_KEY].attributedBody;
+          // console.log(text);
+          if (
+            profile.picture &&
+            profile.picture[PICTURE_KEY] &&
+            profile.picture[PICTURE_KEY].artifacts &&
+            profile.picture[PICTURE_KEY].rootUrl &&
+            profile.picture[PICTURE_KEY].artifacts[0]
+          ) {
+            const pictureUrlBase = profile.picture[PICTURE_KEY].rootUrl;
+            const picturePath = profile.picture[PICTURE_KEY].artifacts[0].fileIdentifyingUrlPathSegment;
+            pictureUrl = pictureUrlBase + picturePath;
+          }
+          if (participant_profile.firstName === profile.firstName && participant_profile.lastName === profile.lastName) {
+            participant_profile.firstName = "Me";
+            participant_profile.lastName = "";
+          }
           messages.push({
             name: `${profile.firstName} ${profile.lastName}`,
             pictureUrl,
+            toWho: `${participant_profile.firstName} ${participant_profile.lastName}`,
             subject,
-            body: body.substr(0, MESSAGE_LENGTH_LIMIT_CHARS) + '......'
+            body: text,
+            subtype
           });
         } else {
-          messages.push({
-            name: `${profile.firstName} ${profile.lastName}`,
-            pictureUrl,
-            subject,
-            body: body.substr(0, MESSAGE_LENGTH_LIMIT_CHARS)
-          });
+          if (
+            profile.picture &&
+            profile.picture[PICTURE_KEY] &&
+            profile.picture[PICTURE_KEY].artifacts &&
+            profile.picture[PICTURE_KEY].rootUrl &&
+            profile.picture[PICTURE_KEY].artifacts[0]
+          ) {
+            const pictureUrlBase = profile.picture[PICTURE_KEY].rootUrl;
+            const picturePath = profile.picture[PICTURE_KEY].artifacts[0].fileIdentifyingUrlPathSegment;
+            pictureUrl = pictureUrlBase + picturePath;
+          }
+          
+          if (participant_profile.firstName === profile.firstName && participant_profile.lastName === profile.lastName) {
+            // console.log(participant_profile.firstName + "|" + profile.firstName);
+            participant_profile.firstName = "Me";
+            participant_profile.lastName = "";
+          }
+
+          if (body.length > MESSAGE_LENGTH_LIMIT_CHARS) {
+            messages.push({
+              name: `${profile.firstName} ${profile.lastName}`,
+              pictureUrl,
+              toWho: `${participant_profile.firstName} ${participant_profile.lastName}`,
+              subject,
+              body: body.substr(0, MESSAGE_LENGTH_LIMIT_CHARS) + '......',
+              subtype
+            });
+          } else {
+            messages.push({
+              name: `${profile.firstName} ${profile.lastName}`,
+              pictureUrl,
+              toWho: `${participant_profile.firstName} ${participant_profile.lastName}`,
+              subject,
+              body: body.substr(0, MESSAGE_LENGTH_LIMIT_CHARS),
+              subtype
+            });
+          }
         }
-      // }
     }
   }
 
@@ -123,9 +158,11 @@ function createMessageRows(messages, totalMessages) {
   // Header
   document.getElementById('header').innerHTML = `
     <tr>
-      <th scope="col"></th>
-      <th scope="col">Name/Subject</th>
+      <th scope="col">Img</th>
+      <th scope="col">Subject</th>
+      <th scope="col">To</th>
       <th scope="col">Content</th>
+      <th scope="col">Type</th>
     </tr>
   `;
 
@@ -139,7 +176,11 @@ function createMessageRows(messages, totalMessages) {
         <b>${message.name}</b><br />
         ${message.subject}
       </td>
+      <td>
+        ${message.toWho}
+      </td>
       <td>${message.body}</td>
+      <td>${message.subtype}</td>
     `;
 
     document.getElementById('messages').appendChild(messageRow);
@@ -148,7 +189,7 @@ function createMessageRows(messages, totalMessages) {
   // footer
   document.getElementById('footer').innerHTML = `
     <tr>
-      <td colspan="3">
+      <td colspan="5">
         <span class="text-info">Showing ${messages.length} messages of total ${totalMessages}</span>
         <br></br>
         <a class="btn btn-info btn-sm float-left" id="go-to-inbox">Goto inbox</a>
@@ -171,30 +212,3 @@ function createBadges(unreadCount) {
     `;
   }
 }
-
-
-// function invitations(token) {
-//   const request = new Request('https://linkedin.com/voyager/api/relationships/invitations', {
-//     method: 'GET',
-//     headers: new Headers({
-//       accept: 'application/json',
-//       'Content-Type': 'application/json',
-//       'csrf-token': token
-//     }),
-//     credentials: 'include'
-//   });
-
-//   fetch(request)
-//     .then(response => {
-//       if (
-//         response.status === httpStatusCodes.UNAUTHORIZED ||
-//         response.status === httpStatusCodes.REQUEST_DENIED
-//       ) {
-//         goToLogin();
-//         return;
-//       }
-//       console.log(response);
-//       return response.json();
-//     })
-//     .then(processResponse);
-// }
