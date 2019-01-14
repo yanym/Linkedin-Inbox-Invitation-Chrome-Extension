@@ -54,10 +54,19 @@ function performRequest(token) {
 
 function processResponse(json) {
   const { elements, metadata, paging } = json;
-  console.log(elements);
+  // console.log(elements);
   // console.log(metadata);
   // console.log(paging);
-  const unreadCount = metadata.unreadCount;
+
+  // unreadCount always has some bugs for this API, so it changed into another way.
+  // const unreadCount = metadata.unreadCount;
+
+  var unreadCount = 0;
+  for (let element of elements) {
+    // let { read: isRead } = element;
+    if (!element.read)
+      unreadCount++;
+  }
   const totalMessages = paging.total;
   // console.log(unreadCount);
   createBadges(unreadCount);
