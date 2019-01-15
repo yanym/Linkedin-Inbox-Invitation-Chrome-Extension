@@ -20,11 +20,12 @@ You can see following infomation about your messages:
 3. Click 'Load Unpacked' and choose the folder.
 4. Check it out now.  
 
-# [How to add it into Chrome extension? ]  
+# How to add it into Chrome extension?  
 [Click here and check it out.](https://chrome.google.com/webstore/detail/linkedin-inbox/eaceggfpmjnmgodgpffplfmadjjpfabp/related?hl=en-US&gl=US)  
 
 # Demo
 ![](https://github.com/yanym/Linkedin-Inbox-Invitation-Chrome-Extension/blob/master/_locales/en/Demo1.png)  
+
 
 ![](https://github.com/yanym/Linkedin-Inbox-Invitation-Chrome-Extension/blob/master/_locales/en/Demo2.png)  
 
