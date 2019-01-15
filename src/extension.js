@@ -1,3 +1,9 @@
+var lastTimeForEachPage = new Map();
+var page = 0;
+lastTimeForEachPage.set(page, 9999999999000);
+var token;
+var totalPage;
+
 function requestStats() {
   chrome.cookies.get({
     url: 'https://www.linkedin.com',
@@ -22,20 +28,21 @@ function extractTokenAndPerformRequest(cookie) {
     goToLogin();
     return;
   }
-  const token = cookie.value.replace(/"/g, '');
-  performRequest(token);
+  token = cookie.value.replace(/"/g, '');
+  performRequest(token, lastTimeForEachPage.get(page));
 }
 
-function performRequest(token) {
-  // invitations(token);
-  const request = new Request('https://linkedin.com/voyager/api/messaging/conversations', {
+function performRequest(token, time) {
+  time -= 1;
+  const creatBefore = 'createdBefore=' + time;
+  const request = new Request('https://linkedin.com/voyager/api/messaging/conversations?' + creatBefore, {
     method: 'GET',
     headers: new Headers({
       accept: 'application/json',
       'Content-Type': 'application/json',
       'Csrf-Token': token
     }),
-    credentials: 'include'
+    credentials: 'include',
   });
 
   fetch(request)
@@ -52,6 +59,21 @@ function performRequest(token) {
     .then(processResponse);
 }
 
+function nextPage() {
+  // console.log(page + 1);
+  if (lastTimeForEachPage.get(page + 1) != undefined) {
+    document.getElementById('messages').innerHTML = "";
+    performRequest(token, lastTimeForEachPage.get(++page));
+  }
+}
+
+function prevPage() {
+  // console.log(page - 1);
+  if (lastTimeForEachPage.get(page - 1) != undefined) {
+    document.getElementById('messages').innerHTML = "";
+    performRequest(token, lastTimeForEachPage.get(--page));
+  }
+}
 function processResponse(json) {
   const { elements, metadata, paging } = json;
   // console.log(elements);
@@ -67,7 +89,9 @@ function processResponse(json) {
     if (!element.read)
       unreadCount++;
   }
-  const totalMessages = paging.total;
+  const totalMessages = paging.total; 
+  if (page === 0)
+    totalPage = (totalMessages - totalMessages % 20) / 20 + 1;
   // console.log(unreadCount);
   createBadges(unreadCount);
 
@@ -82,6 +106,9 @@ function processResponse(json) {
         const { miniProfile: profile } = event.from[MEMBER_KEY];
         const { subtype: _subtype } = event;
         var subtype;
+        var {createdAt: _createdAt} = event;
+        
+
         if (_subtype === "INVITATION_ACCEPT") {
           subtype = "AC_Invitation"
         }
@@ -164,6 +191,8 @@ function processResponse(json) {
         }
     }
   }
+
+  lastTimeForEachPage.set(page + 1, _createdAt);
 
   if (messages.length === 0) {
     document.getElementById('header').innerHTML = `
@@ -259,19 +288,24 @@ function createMessageRows(messages, totalMessages) {
   }
 
   // footer
+  // <span class="text-info">Showing ${messages.length} messages of total ${totalMessages}</span>
+  // <a class="btn btn-info btn-sm float-left" id="go-to-inbox">Goto inbox</a>
   document.getElementById('footer').innerHTML = `
     <tr>
       <td colspan="5">
-        <span class="text-info">Showing ${messages.length} messages of total ${totalMessages}</span>
+        <span class="text-info">Page ${page + 1} of ${totalPage} </span>
         <br></br>
-        <a class="btn btn-info btn-sm float-left" id="go-to-inbox">Goto inbox</a>
+        <button type="button" class="btn-sm btn-outline-success" id="next-page">Next</button> <button type="button" class="btn-sm btn-outline-warning" id="prev-page">Prev</button>
+        <br></br>
+        <button type="button" class="btn-sm btn-primary" float-left" id="go-to-inbox">Goto inbox</button>
+       
       </td>
     </tr>
   `;
 
-  document
-    .getElementById('go-to-inbox')
-    .addEventListener('click', goToInbox);
+  document.getElementById('go-to-inbox').addEventListener('click', goToInbox);
+  document.getElementById('next-page').addEventListener('click', nextPage);
+  document.getElementById('prev-page').addEventListener('click', prevPage);
 }
 
 

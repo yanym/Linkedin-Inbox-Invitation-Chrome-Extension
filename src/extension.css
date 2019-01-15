@@ -29,7 +29,7 @@ table {
 /* Bootstrap overrides */
 
 .btn, .btn-info {
-  color: #fff !important;
+  /* color: #fff !important; */
   cursor: pointer;
 }
 
