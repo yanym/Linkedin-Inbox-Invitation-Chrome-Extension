@@ -1,8 +1,27 @@
+const MESSAGE_KEY = 'com.linkedin.voyager.messaging.event.MessageEvent';
+const PICTURE_KEY = 'com.linkedin.common.VectorImage';
+const MEMBER_KEY = 'com.linkedin.voyager.messaging.MessagingMember';
+const PICTURE_URL_BASE = 'https://media-exp2.licdn.com/mpr/mpr/shrinknp_100_100/';
+const DEFAULT_PICTURE_URL = '../assets/default.png';
+const MESSAGE_LENGTH_LIMIT_CHARS = 1111;
+const httpStatusCodes = Object.freeze({
+  UNAUTHORIZED: 401,
+  REQUEST_DENIED: 999
+});
+const eventSubTypes = Object.freeze({
+  INVITATION_ACCEPT: 'INVITATION_ACCEPT',
+  INMAIL_REPLY: 'INMAIL_REPLY',
+  MEMBER_TO_MEMBER: 'MEMBER_TO_MEMBER',
+  INMAIL: 'INMAIL',
+});
+
+
 var lastTimeForEachPage = new Map();
 var page = 0;
 lastTimeForEachPage.set(page, 9999999999000);
 var token;
 var totalPage;
+
 
 function requestStats() {
   chrome.cookies.get({
@@ -11,17 +30,20 @@ function requestStats() {
   }, extractTokenAndPerformRequest);
 }
 
+
 function goToLogin() {
   chrome.tabs.create({
     url: 'https://www.linkedin.com/m/login/'
   });
 }
 
+
 function goToInbox() {
   chrome.tabs.create({
     url: 'https://www.linkedin.com/messaging'
   });
 }
+
 
 function extractTokenAndPerformRequest(cookie) {
   if (!cookie) {
@@ -31,6 +53,7 @@ function extractTokenAndPerformRequest(cookie) {
   token = cookie.value.replace(/"/g, '');
   performRequest(token, lastTimeForEachPage.get(page));
 }
+
 
 function performRequest(token, time) {
   time -= 1;
@@ -59,21 +82,23 @@ function performRequest(token, time) {
     .then(processResponse);
 }
 
+
 function nextPage() {
-  // console.log(page + 1);
-  if (lastTimeForEachPage.get(page + 1) != undefined) {
+  if (lastTimeForEachPage.get(page + 1) != undefined && page + 1 < totalPage) {
     document.getElementById('messages').innerHTML = "";
     performRequest(token, lastTimeForEachPage.get(++page));
   }
 }
 
+
 function prevPage() {
-  // console.log(page - 1);
   if (lastTimeForEachPage.get(page - 1) != undefined) {
     document.getElementById('messages').innerHTML = "";
     performRequest(token, lastTimeForEachPage.get(--page));
   }
 }
+
+
 function processResponse(json) {
   const { elements, metadata, paging } = json;
   // console.log(elements);
@@ -82,7 +107,6 @@ function processResponse(json) {
 
   // unreadCount always has some bugs for this API, so it changed into another way.
   // const unreadCount = metadata.unreadCount;
-
   var unreadCount = 0;
   for (let element of elements) {
     // let { read: isRead } = element;
@@ -94,20 +118,16 @@ function processResponse(json) {
     totalPage = (totalMessages - totalMessages % 20) / 20 + 1;
   // console.log(unreadCount);
   createBadges(unreadCount);
-
   const messages = [];
-
   for (let element of elements) {
     const { miniProfile: participant_profile } = element.participants[0][MEMBER_KEY];
     const { read: isRead } = element;
-    // console.log(isRead);
     for (let event of element.events) {
         const { subject = '', body } = event.eventContent[MESSAGE_KEY];
         const { miniProfile: profile } = event.from[MEMBER_KEY];
         const { subtype: _subtype } = event;
         var subtype;
         var {createdAt: _createdAt} = event;
-        
 
         if (_subtype === "INVITATION_ACCEPT") {
           subtype = "AC_Invitation"
@@ -191,9 +211,7 @@ function processResponse(json) {
         }
     }
   }
-
   lastTimeForEachPage.set(page + 1, _createdAt);
-
   if (messages.length === 0) {
     document.getElementById('header').innerHTML = `
       <tr>
@@ -207,7 +225,6 @@ function processResponse(json) {
 
 
 function createMessageRows(messages, totalMessages) {
-  // Header
   document.getElementById('header').innerHTML = `
     <tr>
       <th scope="col" style="text-align: center">Profile</th>
@@ -286,23 +303,17 @@ function createMessageRows(messages, totalMessages) {
     document.getElementById('messages').appendChild(messageRow);
     controlColor++;
   }
-
-  // footer
-  // <span class="text-info">Showing ${messages.length} messages of total ${totalMessages}</span>
-  // <a class="btn btn-info btn-sm float-left" id="go-to-inbox">Goto inbox</a>
   document.getElementById('footer').innerHTML = `
     <tr>
       <td colspan="5">
         <span class="text-info">Page ${page + 1} of ${totalPage} </span>
         <br></br>
-        <button type="button" class="btn-sm btn-outline-success" id="next-page">Next</button> <button type="button" class="btn-sm btn-outline-warning" id="prev-page">Prev</button>
+        <button type="button" class="btn-sm btn-outline-warning" id="prev-page">Prev</button> <button type="button" class="btn-sm btn-outline-success" id="next-page">Next</button> 
         <br></br>
         <button type="button" class="btn-sm btn-primary" float-left" id="go-to-inbox">Goto inbox</button>
-       
       </td>
     </tr>
   `;
-
   document.getElementById('go-to-inbox').addEventListener('click', goToInbox);
   document.getElementById('next-page').addEventListener('click', nextPage);
   document.getElementById('prev-page').addEventListener('click', prevPage);

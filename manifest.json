@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
-  "name": "Linkedin Message Browser",
-  "short_name": "Linkedin MSG",
+  "name": "Linkedin Inbox",
+  "short_name": "Linkedin Inbox",
   "description": "Check your Linkedin Messages",
   "default_locale": "en",
   "version": "1.0",
@@ -9,7 +9,7 @@
   "browser_action": {
     "default_icon": "./assets/icon.png",
     "default_popup": "./src/popup.html",
-    "default_title": "LinkedIn MSG"
+    "default_title": "Linkedin Inbox"
   },
   "permissions": [
     "cookies",
