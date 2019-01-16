@@ -4,7 +4,7 @@
   "short_name": "Linkedin Inbox",
   "description": "Help you check the Linkedin Messages",
   "default_locale": "en",
-  "version": "1.0",
+  "version": "1.1",
   "author": "Ed",
   "browser_action": {
     "default_icon": "./assets/icon.png",
