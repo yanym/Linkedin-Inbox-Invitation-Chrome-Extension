@@ -306,11 +306,9 @@ function createMessageRows(messages, totalMessages) {
   document.getElementById('footer').innerHTML = `
     <tr>
       <td colspan="5">
-        <span class="text-info">Page ${page + 1} of ${totalPage} </span>
+        <span class="text-info" style="font-size:15px">Page ${page + 1} of ${totalPage} </span>
         <br></br>
-        <button type="button" class="btn-sm btn-outline-warning" id="prev-page">Prev</button> <button type="button" class="btn-sm btn-outline-success" id="next-page">Next</button> 
-        <br></br>
-        <button type="button" class="btn-sm btn-primary" float-left" id="go-to-inbox">Goto inbox</button>
+        <button type="button" class="btn btn-outline-danger" id="prev-page">Prev</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button type="button" class="btn btn-outline-success" id="next-page">Next</button> <button type="button" class="btn btn-primary float-right" id="go-to-inbox">Goto inbox</button>
       </td>
     </tr>
   `;
